@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using API.Dtos;
+using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
@@ -26,17 +27,37 @@ public class ProductsController: ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Product>>> GetProducts()
+    public async Task<ActionResult<List<ProductToReturnDto>>> GetProducts()
     {
         var spec = new ProductWithTypeAndBrandsSpecification();
+        var products = await _productRepository.ListAsync(spec);
         
-        return Ok(await _productRepository.ListAsync(spec));
+        return products.Select(product => new ProductToReturnDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            PictureUrl = product.PictureUrl,
+            Price = product.Price,
+            ProductType = product.ProductType.Name,
+            ProductBrand = product.ProductBrand.Name,
+        }).ToList();
     }
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
     {
         var spec = new ProductWithTypeAndBrandsSpecification(id);
-        return Ok(await _productRepository.GetEntityWithSpec(spec));
+        var product = await _productRepository.GetEntityWithSpec(spec);
+        return new ProductToReturnDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            PictureUrl = product.PictureUrl,
+            Price = product.Price,
+            ProductType = product.ProductType.Name,
+            ProductBrand = product.ProductBrand.Name,
+        };
     }
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProductBrands()
