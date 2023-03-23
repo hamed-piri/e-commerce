@@ -15,6 +15,9 @@ public class MappingProfiles: Profile
             ).ForMember(
                 productToReturnDto => productToReturnDto.ProductBrand,
                 expression => expression.MapFrom(product  => product.ProductBrand.Name)
+            ).ForMember(
+                productToReturnDto => productToReturnDto.PictureUrl,
+                expression => expression.MapFrom<ProductUrlResolver>()
             );
     }
 }
