@@ -1,4 +1,5 @@
 ﻿using API.Dtos;
+using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
@@ -13,51 +14,35 @@ public class ProductsController: ControllerBase
     private readonly IGenericRepository<Product> _productRepository;
     private readonly IGenericRepository<ProductBrand> _productBrandRepository;
     private readonly IGenericRepository<ProductType> _productTypeRepository;
+    private readonly IMapper _mapper;
 
     public ProductsController
     (
         IGenericRepository<Product> productRepository,
         IGenericRepository<ProductBrand> productBrandRepository,
-        IGenericRepository<ProductType> productTypeRepository
+        IGenericRepository<ProductType> productTypeRepository,
+        IMapper mapper
     )
     {
         _productRepository = productRepository;
         _productBrandRepository = productBrandRepository;
         _productTypeRepository = productTypeRepository;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ProductToReturnDto>>> GetProducts()
+    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
     {
         var spec = new ProductWithTypeAndBrandsSpecification();
         var products = await _productRepository.ListAsync(spec);
-        
-        return products.Select(product => new ProductToReturnDto
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            PictureUrl = product.PictureUrl,
-            Price = product.Price,
-            ProductType = product.ProductType.Name,
-            ProductBrand = product.ProductBrand.Name,
-        }).ToList();
+        return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
     }
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
     {
         var spec = new ProductWithTypeAndBrandsSpecification(id);
         var product = await _productRepository.GetEntityWithSpec(spec);
-        return new ProductToReturnDto
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            PictureUrl = product.PictureUrl,
-            Price = product.Price,
-            ProductType = product.ProductType.Name,
-            ProductBrand = product.ProductBrand.Name,
-        };
+        return _mapper.Map<Product, ProductToReturnDto>(product);
     }
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProductBrands()
