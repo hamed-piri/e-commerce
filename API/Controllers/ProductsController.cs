@@ -30,12 +30,18 @@ public class ProductsController: BaseApiController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(string sort)
+    public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts
+        (
+            string sort,
+            int? brandId,
+            int? typeId
+        )
     {
-        var spec = new ProductWithTypeAndBrandsSpecification(sort);
+        var spec = new ProductWithTypeAndBrandsSpecification(sort,brandId,typeId);
         var products = await _productRepository.ListAsync(spec);
         return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
     }
+    
     [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -46,11 +52,13 @@ public class ProductsController: BaseApiController
         if (product == null) return NotFound(new ApiResponse(404));
         return _mapper.Map<Product, ProductToReturnDto>(product);
     }
+    
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProductBrands()
     {
         return Ok(await _productBrandRepository.ListAllAsync());
     }
+    
     [HttpGet("types")]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProductTypes()
     {
