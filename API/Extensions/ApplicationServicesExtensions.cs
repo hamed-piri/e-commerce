@@ -1,6 +1,7 @@
 ﻿using API.Errors;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -17,6 +18,10 @@ public static class ApplicationServicesExtensions
         services.AddDbContext<StoreContext>(opt =>
         {
             opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
+        });
+        services.AddDbContext<AppIdentityDbContext>(opt =>
+        {
+            opt.UseSqlite(config.GetConnectionString("IdentityConnection"));
         });
         services.AddSingleton<IConnectionMultiplexer>(c => 
         {
