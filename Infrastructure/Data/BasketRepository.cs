@@ -1,22 +1,38 @@
-﻿using Core.Entities;
+﻿using System.Text.Json;
+using Core.Entities;
 using Core.Interfaces;
+using StackExchange.Redis;
 
 namespace Infrastructure.Data;
 
-public class BasketRepository: IBasketRepository
+public class BasketRepository : IBasketRepository
 {
-    public Task<CustomerBasket> GetBasketAsync(string basketId)
+    private readonly IDatabase _database;
+
+    public BasketRepository(IConnectionMultiplexer redis)
     {
-        throw new NotImplementedException();
+        _database = redis.GetDatabase();
     }
 
-    public Task<CustomerBasket> UpdateBasketAsync(CustomerBasket basket)
+    public async Task<CustomerBasket> GetBasketAsync(string basketId)
     {
-        throw new NotImplementedException();
+        var data = await _database.StringGetAsync(basketId);
+        return data.IsNullOrEmpty ? null : JsonSerializer.Deserialize<CustomerBasket>(data);
     }
 
-    public Task<bool> DeleteBasketAsync(string basketId)
+    public async Task<CustomerBasket> UpdateBasketAsync(CustomerBasket basket)
     {
-        throw new NotImplementedException();
+        var created = await _database.StringSetAsync(
+            basket.Id, 
+            JsonSerializer.Serialize(basket),
+            TimeSpan.FromMinutes(1)
+            );
+        if (!created) return null;
+        return await GetBasketAsync(basket.Id);
+    }
+
+    public async Task<bool> DeleteBasketAsync(string basketId)
+    {
+        return await _database.KeyDeleteAsync(basketId);
     }
 }
