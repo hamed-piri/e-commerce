@@ -25,7 +25,7 @@ public class BasketRepository : IBasketRepository
         var created = await _database.StringSetAsync(
             basket.Id, 
             JsonSerializer.Serialize(basket),
-            TimeSpan.FromMinutes(1)
+            TimeSpan.FromDays(30)
             );
         if (!created) return null;
         return await GetBasketAsync(basket.Id);
