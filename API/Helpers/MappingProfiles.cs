@@ -1,6 +1,7 @@
 ﻿using API.Dtos;
 using AutoMapper;
 using Core.Entities;
+using Core.Entities.Identity;
 
 namespace API.Helpers;
 
@@ -19,5 +20,6 @@ public class MappingProfiles: Profile
                 productToReturnDto => productToReturnDto.PictureUrl,
                 expression => expression.MapFrom<ProductUrlResolver>()
             );
+        CreateMap<Address, AddressDto>().ReverseMap();
     }
 }
