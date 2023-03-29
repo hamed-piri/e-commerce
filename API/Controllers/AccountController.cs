@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
-using API.Dtos;
+﻿using API.Dtos;
 using API.Errors;
+using API.Extensions;
 using Core.Entities.Identity;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -30,10 +30,7 @@ public class AccountController: BaseApiController
     [HttpGet]
     public async Task<ActionResult<UserDto>> GetCurrentUser()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        var email2 = HttpContext.User?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-
-        var user = await _userManager.FindByEmailAsync(email ?? string.Empty);
+        var user = await _userManager.FindByEmailFromClaimsPrincipal(User);
         return new UserDto
         {
             Email = user?.Email,
@@ -42,7 +39,7 @@ public class AccountController: BaseApiController
         };
     }
     
-    [HttpGet("emailexist")]
+    [HttpGet("emailExist")]
     public async Task<ActionResult<bool>> CheckEmailExistAsync([FromQuery] string email)
     {
         return await _userManager.FindByEmailAsync(email) != null;
@@ -52,9 +49,7 @@ public class AccountController: BaseApiController
     [HttpGet("address")]
     public async Task<ActionResult<Address>> GetUserAddress()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindUserByClaimsPrincipleWithAddress(User);
         return user.Address;
     }
 
