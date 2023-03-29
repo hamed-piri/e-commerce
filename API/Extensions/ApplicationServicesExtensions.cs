@@ -2,6 +2,7 @@
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Identity;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -19,15 +20,12 @@ public static class ApplicationServicesExtensions
         {
             opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
         });
-        services.AddDbContext<AppIdentityDbContext>(opt =>
-        {
-            opt.UseSqlite(config.GetConnectionString("IdentityConnection"));
-        });
         services.AddSingleton<IConnectionMultiplexer>(c => 
         {
             var options = ConfigurationOptions.Parse(config.GetConnectionString("Redis"));
             return ConnectionMultiplexer.Connect(options);
         });
+        services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IBasketRepository, BasketRepository>();
